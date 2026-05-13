@@ -23,7 +23,8 @@ class Sis:
         )
 
         self.db.commit()
-
+    # t: tipo cliente
+    # its: itens?
     def add_ped(self, n, its, t):
         dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         tot = 0
@@ -47,6 +48,13 @@ class Sis:
         self.c.execute(
             "INSERT INTO ped (cli, itens, tot, st, dt, tp) VALUES (?, ?, ?, ?, ?, ?)",
             (n, its_str, tot, "pendente", dt, t),
+            # ped: Pedido
+            # n: nome do cliente -> cli
+            # its_str: ITens
+            # tot: Total
+            # st: status
+            # dt: Data e hora do pedido
+            # tp: Tipo do cliente
         )
         self.db.commit()
 
@@ -61,6 +69,7 @@ class Sis:
 
         return self.c.lastrowid
 
+    # Obter pedido
     def get_ped(self, id):
         self.c.execute("SELECT * FROM ped WHERE id = ?", (id,))
         r = self.c.fetchone()
@@ -78,6 +87,7 @@ class Sis:
 
         return None
 
+    # Atualiza status
     def upd_st(self, id, s):
         p = self.get_ped(id)
 
@@ -95,15 +105,16 @@ class Sis:
                 print(f"Email enviado para {p['cli']}: Pedido entregue!")
 
                 if p["tp"] == "vip":
-                    pts = int(p["tot"] * 2)
+                    pts = int(p["tot"] * 2) # Os pontos são o dobro do valor do pedido para o vip
                     print(f"Cliente VIP ganhou {pts} pontos!")
                 elif p["tp"] == "corporativo":
-                    pts = int(p["tot"] * 1.5)
+                    pts = int(p["tot"] * 1.5) # Os pontos são o dobro do valor do pedido para o corporativo
                     print(f"Cliente corporativo ganhou {pts} pontos!")
                 else:
                     pts = int(p["tot"])
-                    print(f"Cliente ganhou {pts} pontos!")
+                    print(f"Cliente ganhou {pts} pontos!") # Cliente normal ganha o valor do pedido em pontos
 
+    # calcula o valor total de todos os pedidos do cliente
     def calc_tot_cli(self, n):
         self.c.execute("SELECT * FROM ped WHERE cli = ?", (n,))
         rs = self.c.fetchall()
@@ -114,13 +125,14 @@ class Sis:
 
         return t
 
+    # Gera relatorio
     def gerar_rel(self, tipo):
         if tipo == "vendas":
             self.c.execute("SELECT * FROM ped")
             rs = self.c.fetchall()
             print("=== RELATORIO DE VENDAS ===")
 
-            tot_g = 0
+            tot_g = 0 # Soma dos valores de todos os pedidos | Valor das vendas de pedidos
             for r in rs:
                 print(
                     f"Pedido #{r[0]} - Cliente: {r[1]} - "
@@ -133,6 +145,7 @@ class Sis:
             with open("rel_vendas.txt", "w") as f:
                 f.write(f"Total de vendas: {tot_g}")
 
+        # Relatório de cada cliente
         elif tipo == "clientes":
             self.c.execute("SELECT DISTINCT cli, tp FROM ped")
             rs = self.c.fetchall()
@@ -148,6 +161,10 @@ class Sis:
                 for r in rs:
                     f.write(f"{r[0]},{r[1]}\n")
 
+    # Processar pagamento
+    # id: id pedido
+    # m: Método de pagamento
+    # vl: Valor enviado 
     def proc_pag(self, id, m, vl):
         p = self.get_ped(id)
         if not p:
@@ -175,6 +192,8 @@ class Sis:
             print("Metodo de pagamento invalido!")
             return False
 
+    # its: itens?
+    # produtos
     def validar_estoque(self, its):
         est = {"produto1": 100, "produto2": 50, "produto3": 75}
 
@@ -197,6 +216,10 @@ class Sis:
         self.db.close()
 
 
+# Pedido especial
+# n: nome do cliente
+# its: produtos
+# t: tipo do cliente
 class PedEspecial(Sis):
     def add_ped(self, n, its, t):
         dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -210,7 +233,7 @@ class PedEspecial(Sis):
             elif i["tipo"] == "desc20":
                 tot += i["p"] * i["q"] * 0.8
 
-        tot *= 1.15
+        tot *= 1.15 # Total fica 1.15 mais caro
         its_str = json.dumps(its)
         self.c.execute(
             "INSERT INTO ped (cli, itens, tot, st, dt, tp) VALUES (?, ?, ?, ?, ?, ?)",
