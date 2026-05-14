@@ -107,6 +107,7 @@ class Sis:
                 if p["tp"] == "vip":
                     pts = int(p["tot"] * 2) # Os pontos são o dobro do valor do pedido para o vip
                     print(f"Cliente VIP ganhou {pts} pontos!")
+
                 elif p["tp"] == "corporativo":
                     pts = int(p["tot"] * 1.5) # Os pontos são o dobro do valor do pedido para o corporativo
                     print(f"Cliente corporativo ganhou {pts} pontos!")
@@ -233,7 +234,7 @@ class PedEspecial(Sis):
             elif i["tipo"] == "desc20":
                 tot += i["p"] * i["q"] * 0.8
 
-        tot *= 1.15 # Total fica 1.15 mais caro
+        tot *= 1.15 # Total fica 0.15 mais caro
         its_str = json.dumps(its)
         self.c.execute(
             "INSERT INTO ped (cli, itens, tot, st, dt, tp) VALUES (?, ?, ?, ?, ?, ?)",
