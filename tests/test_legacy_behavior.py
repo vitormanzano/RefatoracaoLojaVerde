@@ -177,6 +177,13 @@ def test_atualizar_status_pedido_existente_para_entregue_cliente_corporativo(sis
     assert ped['st'] == "entregue"
 
 
+# Código simplesmente não diz nada sobre o que aconteceu, se falhou ou se teve sucesso
+def test_atualizar_status_pedido_inexistente_para_enviado(sis):
+    itens = [{"nome": "p1", "p": 100, "q": 1, "tipo": "normal"}]
+
+    assert sis.upd_st("id_nao_existe", "enviado") == None
+    
+
 def test_calcula_valor_total_dos_pedidos_de_um_cliente(sis):
     itens = [{"nome": "p1", "p": 100, "q": 1, "tipo": "normal"}]
 
@@ -187,11 +194,6 @@ def test_calcula_valor_total_dos_pedidos_de_um_cliente(sis):
     assert valor_total == pytest.approx(100.0)
 
 
-# Teste falha com código atual
-def test_atualizar_status_pedido_inexistente_para_enviado(sis):
-    itens = [{"nome": "p1", "p": 100, "q": 1, "tipo": "normal"}]
-
-    sis.upd_st("id_nao_existe", "enviado") 
 
 def test_cancelar_pedido_existente(sis):
     itens = [{"nome": "p1", "p": 100, "q": 1, "tipo": "normal"}]
@@ -208,7 +210,7 @@ def test_cancelar_pedido_existente(sis):
 def test_cancelar_pedido_inexistente(sis):
     itens = [{"nome": "p1", "p": 100, "q": 1, "tipo": "normal"}]
 
-    sis.cancelar_pedido("id_ped") 
+    assert sis.cancelar_pedido("id_ped") == None
 
 def test_gerar_relatorio_tipo_vendas(sis, tmp_path):
       sis.gerar_rel("vendas")
@@ -303,7 +305,7 @@ def test_pedido_especial_calcula_total_corretamente(pedEspecial):
     assert pedido["st"] == "pendente"
 
 
-def test_atualizar_pedido_especial(pedEspecial):
+def test_atualizar_pedido_especial_existente(pedEspecial):
 
     itens = [
         {"nome": "p1", "p": 100, "q": 2, "tipo": "normal"},
@@ -316,4 +318,9 @@ def test_atualizar_pedido_especial(pedEspecial):
     pedido = pedEspecial.get_ped(id_ped)
 
     assert pedido["st"] == "atualizado"
+
+
+def test_atualizar_pedido_especial_inexistente(pedEspecial):
+    assert pedEspecial.upd_st("id_ped", "atualizado") == None
+
 
